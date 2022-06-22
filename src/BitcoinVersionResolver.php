@@ -1,10 +1,10 @@
 <?php
 
-namespace Qxcoin\BIP32;
+namespace QXCoin\BIP32;
 
 use InvalidArgumentException;
 
-class BitcoinVersionResolver implements VersionResolverInterface
+final class BitcoinVersionResolver implements VersionResolverInterface
 {
     private readonly bool $testnet;
 

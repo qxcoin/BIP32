@@ -1,6 +1,6 @@
 <?php
 
-namespace Qxcoin\BIP32;
+namespace QXCoin\BIP32;
 
 final class PublicChildKey
 {

@@ -1,7 +1,7 @@
 <?php
 
-use Qxcoin\BIP32\BIP32;
-use Qxcoin\BIP32\BitcoinVersionResolver;
+use QXCoin\BIP32\BIP32;
+use QXCoin\BIP32\BitcoinVersionResolver;
 
 require('../vendor/autoload.php');
 

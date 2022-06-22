@@ -1,9 +1,9 @@
 <?php
 
-namespace Qxcoin\Tests;
+namespace QXCoin\Tests;
 
-use Qxcoin\BIP32\BIP32;
-use Qxcoin\BIP32\BitcoinVersionResolver;
+use QXCoin\BIP32\BIP32;
+use QXCoin\BIP32\BitcoinVersionResolver;
 use PHPUnit\Framework\TestCase;
 
 class DerivationTest extends TestCase

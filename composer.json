@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Qxcoin\\BIP32\\": "src"
+            "QXCoin\\BIP32\\": "src"
         }
     },
     "scripts": {
