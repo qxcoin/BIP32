@@ -2,14 +2,15 @@
 
 namespace QXCoin\BIP32;
 
+use GMP;
+
 final class PrivateChildKey
 {
     /**
-     * @param string $key Private key in binary string
      * @param string $chainCode Chain code in binary string
      */
     public function __construct(
-        public readonly string $key,
+        public readonly GMP $secret,
         public readonly string $chainCode,
         public readonly int $version,
         public readonly int $depth,

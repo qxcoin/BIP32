@@ -20,9 +20,9 @@ final class BIP32
     private Base58 $base58;
     private GeneratorPoint $ecc;
 
-    public function __construct(VersionResolverInterface $versionResolver)
+    public function __construct(VersionResolverInterface $versionResolver = null)
     {
-        $this->versionResolver = $versionResolver;
+        $this->versionResolver = $versionResolver ?? new BitcoinVersionResolver();
         $this->base58 = new Base58(['characters' => Base58::BITCOIN]);
         $this->ecc = EccFactory::getSecgCurves()->generator256k1();
     }
@@ -50,13 +50,13 @@ final class BIP32
         $version = $this->versionResolver->getPrivateVersionBytes();
 
         return new PrivateChildKey(
-            $this->ser256($privateKey), $chainCode, $version, 0, 0x00000000, 0,
+            $privateKey, $chainCode, $version, 0, 0x00000000, 0,
         );
     }
 
     public function CKDpriv(PrivateChildKey $parent, int $i): PrivateChildKey
     {
-        $k_par = $this->parse256($parent->key);
+        $k_par = $parent->secret;
         $c_par = $parent->chainCode;
 
         $key = $c_par;
@@ -80,7 +80,7 @@ final class BIP32
         $fingerprint = hexdec(substr($this->hash160($this->serP($this->point($k_par))), 0, 8));
 
         return new PrivateChildKey(
-            $this->ser256($k_i), $I_R, $parent->version, $parent->depth + 1, $fingerprint, $i,
+            $k_i, $I_R, $parent->version, $parent->depth + 1, $fingerprint, $i,
         );
     }
 
@@ -90,7 +90,7 @@ final class BIP32
             throw new InvalidArgumentException("CKDpub doesn't support hardened child.");
         }
 
-        $K_par = $this->parseP($parent->key);
+        $K_par = $this->ecc->getCurve()->getPoint($parent->x, $parent->y);
         $c_par = $parent->chainCode;
 
         $key = $c_par;
@@ -110,7 +110,7 @@ final class BIP32
         $fingerprint = hexdec(substr($this->hash160($this->serP($K_par)), 0, 8));
 
         return new PublicChildKey(
-            $this->serP($K_i), $I_R, $parent->version, $parent->depth + 1, $fingerprint, $i,
+            $K_i->getX(), $K_i->getY(), $I_R, $parent->version, $parent->depth + 1, $fingerprint, $i,
         );
     }
 
@@ -177,8 +177,11 @@ final class BIP32
 
     public function privateToPublicChildKey(PrivateChildKey $childKey): PublicChildKey
     {
+        $point = $this->point($childKey->secret);
+
         return new PublicChildKey(
-            $this->serP($this->point($this->parse256($childKey->key))),
+            $point->getX(),
+            $point->getY(),
             $childKey->chainCode,
             $this->versionResolver->convertVersionBytes($childKey->version),
             $childKey->depth,
@@ -231,13 +234,13 @@ final class BIP32
         if ('private' === $type) {
             if ('00' !== substr($key, 0, 1 * 2)) {
                 throw new InvalidArgumentException('Invalid private key.');
-            } elseif (!$this->rangeN(gmp_init($key = substr($key, 1 * 2), 16))) {
+            } elseif (!$this->rangeN($key = gmp_init(substr($key, 1 * 2), 16))) {
                 throw new InvalidArgumentException('Private key not in range [1, n].');
             }
         }
         if ('public' === $type) {
             try {
-                $this->parseP(hex2bin($key));
+                $point = $this->parseP(hex2bin($key));
             } catch (\Exception $e) {
                 throw new InvalidArgumentException('Invalid public key.', 0, $e);
             }
@@ -246,12 +249,10 @@ final class BIP32
         // Done!
         fclose($handle);
 
-        $key = hex2bin($key);
-
         if ('private' === $type) {
             return new PrivateChildKey($key, $chainCode, $version, $depth, $fingerprint, $childNumber);
         } elseif ('public' === $type) {
-            return new PublicChildKey($key, $chainCode, $version, $depth, $fingerprint, $childNumber);
+            return new PublicChildKey($point->getX(), $point->getY(), $chainCode, $version, $depth, $fingerprint, $childNumber);
         }
     }
 
@@ -265,9 +266,9 @@ final class BIP32
         // see: https://github.com/bitpay/bitcore-lib/issues/47
         // see: https://github.com/iancoleman/bip39/issues/58
         if ($childKey instanceof PrivateChildKey) {
-            $key = str_pad(bin2hex($childKey->key), 66, '0', STR_PAD_LEFT);
+            $key = str_pad(gmp_strval($childKey->secret, 16), 66, '0', STR_PAD_LEFT);
         } elseif ($childKey instanceof PublicChildKey) {
-            $key = bin2hex($childKey->key);
+            $key = bin2hex($this->serP($this->ecc->getCurve()->getPoint($childKey->x, $childKey->y)));
         }
         $chainCode = bin2hex($childKey->chainCode);
 

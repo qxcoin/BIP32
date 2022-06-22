@@ -18,5 +18,5 @@ var_dump($bip32->serialize($account0));
 $address0 = $bip32->derive($account0, "M/0/0");
 $address1 = $bip32->derive($account0, "M/0/1");
 
-var_dump(bin2hex($address0->key));
-var_dump(bin2hex($address1->key));
+var_dump(gmp_strval($address0->x, 16), gmp_strval($address0->y, 16));
+var_dump(gmp_strval($address1->x, 16), gmp_strval($address1->y, 16));
