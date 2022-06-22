@@ -1,6 +1,6 @@
 {
-    "name": "qxcoin/bip39",
-    "description": "Simple BIP39 implementation.",
+    "name": "qxcoin/bip32",
+    "description": "Simple BIP32 implementation.",
     "license": "MIT",
     "authors": [
         {
