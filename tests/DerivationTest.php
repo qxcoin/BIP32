@@ -1,6 +1,6 @@
 <?php
 
-namespace QXCoin\Tests;
+namespace QXCoin\BIP32\Tests;
 
 use QXCoin\BIP32\BIP32;
 use QXCoin\BIP32\BitcoinVersionResolver;

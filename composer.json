@@ -22,6 +22,11 @@
             "QXCoin\\BIP32\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "QXCoin\\BIP32\\Tests\\": "tests"
+        }
+    },
     "scripts": {
         "test": "phpunit"
     }
